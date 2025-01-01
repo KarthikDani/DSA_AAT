@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Abstract}{2}{section.1}%
+\contentsline {section}{\numberline {2}Introduction}{2}{section.2}%
+\contentsline {section}{\numberline {3}Background}{2}{section.3}%
+\contentsline {section}{\numberline {4}Methodology}{2}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Loading the Model}{2}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Chunking the Text}{3}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Speech Generation}{3}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}GUI Implementation}{3}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Code}{4}{section.5}%
+\contentsline {section}{\numberline {6}Results}{7}{section.6}%
+\contentsline {section}{\numberline {7}Analysis}{8}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Performance}{8}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Limitations}{8}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Potential Improvements}{8}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Conclusions}{8}{section.8}%
+\contentsline {section}{\numberline {9}Acknowledgement}{8}{section.9}%
