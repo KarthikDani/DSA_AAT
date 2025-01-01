@@ -1,0 +1,35 @@
+\begin{thebibliography}{1}
+
+\bibitem{arxivAttentionNeed}
+{A}ttention {I}s {A}ll {Y}ou {N}eed --- arxiv.org.
+\newblock \url{https://arxiv.org/abs/1706.03762}.
+\newblock [Accessed 01-01-2025].
+
+\bibitem{huggingfaceSunobarksmallHugging}
+suno/bark-small · {H}ugging {F}ace --- huggingface.co.
+\newblock \url{https://huggingface.co/suno/bark-small}.
+\newblock [Accessed 01-01-2025].
+
+\bibitem{NEURIPS2019_bdbca288}
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory
+  Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban
+  Desmaison, Andreas Kopf, Edward Yang, Zachary DeVito, Martin Raison, Alykhan
+  Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu~Fang, Junjie Bai, and Soumith
+  Chintala.
+\newblock Pytorch: An imperative style, high-performance deep learning library.
+\newblock In H.~Wallach, H.~Larochelle, A.~Beygelzimer, F.~d\textquotesingle
+  Alch\'{e}-Buc, E.~Fox, and R.~Garnett, editors, {\em Advances in Neural
+  Information Processing Systems}, volume~32. Curran Associates, Inc., 2019.
+
+\bibitem{lundh1999introduction}
+Fredrik Lundh.
+\newblock An introduction to tkinter.
+\newblock {\em URL: www. pythonware. com/library/tkinter/introduction/index.
+  htm}, 1999.
+
+\bibitem{huggingfaceHuggingFace}
+{H}ugging {F}ace - {D}ocumentation --- huggingface.co.
+\newblock \url{https://huggingface.co/docs}.
+\newblock [Accessed 01-01-2025].
+
+\end{thebibliography}
