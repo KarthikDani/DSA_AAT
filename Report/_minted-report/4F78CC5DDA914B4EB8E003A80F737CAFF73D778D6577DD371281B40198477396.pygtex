@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{k}{def} \PYG{n+nf}{chunk\PYGZus{}text\PYGZus{}by\PYGZus{}words}\PYG{p}{(}\PYG{n}{text}\PYG{p}{,}
+\PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{o}{=}\PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{):}
+    \PYG{n}{words} \PYG{o}{=} \PYG{n}{text}\PYG{o}{.}\PYG{n}{split}\PYG{p}{()}
+    \PYG{n}{chunks} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{} \PYGZdq{}}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{words}\PYG{p}{[}\PYG{n}{i}\PYG{p}{:}\PYG{n}{i} \PYG{o}{+} \PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{])}
+    \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{words}\PYG{p}{),} \PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{)]}
+    \PYG{k}{return} \PYG{n}{chunks}
+
+\end{Verbatim}

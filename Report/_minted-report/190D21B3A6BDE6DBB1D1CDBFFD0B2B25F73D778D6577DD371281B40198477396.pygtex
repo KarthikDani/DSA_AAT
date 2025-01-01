@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{n}{root} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Tk}\PYG{p}{()}
+\PYG{n}{input\PYGZus{}text} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Text}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,} \PYG{n}{wrap}\PYG{o}{=}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{WORD}\PYG{p}{,}
+\PYG{n}{height}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{,} \PYG{n}{font}\PYG{o}{=}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{12}\PYG{p}{),} \PYG{n}{bg}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}1E1E1E\PYGZdq{}}\PYG{p}{,} \PYG{n}{fg}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{,} \PYG{n}{insertbackground}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{generate\PYGZus{}button} \PYG{o}{=} \PYG{n}{ttk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,}
+\PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Generate Speech\PYGZdq{}}\PYG{p}{,} \PYG{n}{command}\PYG{o}{=}\PYG{n}{on\PYGZus{}generate\PYGZus{}click}\PYG{p}{)}
+
+
+\end{Verbatim}

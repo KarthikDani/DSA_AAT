@@ -1,0 +1,8 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{BarkModel}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}suno/bark\PYGZhy{}small\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{device} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}cuda:0\PYGZdq{}} \PYG{k}{if} \PYG{n}{torch}\PYG{o}{.}\PYG{n}{cuda}\PYG{o}{.}\PYG{n}{is\PYGZus{}available}\PYG{p}{()} \PYG{k}{else} \PYG{l+s+s2}{\PYGZdq{}cpu\PYGZdq{}}
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{to}\PYG{p}{(}\PYG{n}{device}\PYG{p}{)}
+\PYG{n}{processor} \PYG{o}{=} \PYG{n}{AutoProcessor}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}suno/bark\PYGZdq{}}\PYG{p}{)}
+
+\end{Verbatim}

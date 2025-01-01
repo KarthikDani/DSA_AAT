@@ -1,0 +1,158 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{k+kn}{import} \PYG{n+nn}{tkinter} \PYG{k}{as} \PYG{n+nn}{tk}
+\PYG{k+kn}{from} \PYG{n+nn}{tkinter} \PYG{k+kn}{import} \PYG{n}{ttk}\PYG{p}{,} \PYG{n}{filedialog}\PYG{p}{,} \PYG{n}{messagebox}
+\PYG{k+kn}{import} \PYG{n+nn}{torch}
+\PYG{k+kn}{from} \PYG{n+nn}{transformers} \PYG{k+kn}{import} \PYG{n}{AutoProcessor}\PYG{p}{,} \PYG{n}{BarkModel}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{import} \PYG{n+nn}{scipy.io.wavfile}
+
+\PYG{c+c1}{\PYGZsh{} Load model and processor}
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{BarkModel}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}suno/bark\PYGZhy{}small\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{device} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}cuda:0\PYGZdq{}} \PYG{k}{if} \PYG{n}{torch}\PYG{o}{.}\PYG{n}{cuda}\PYG{o}{.}\PYG{n}{is\PYGZus{}available}\PYG{p}{()} \PYG{k}{else} \PYG{l+s+s2}{\PYGZdq{}cpu\PYGZdq{}}
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{to}\PYG{p}{(}\PYG{n}{device}\PYG{p}{)}
+\PYG{n}{processor} \PYG{o}{=} \PYG{n}{AutoProcessor}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}suno/bark\PYGZdq{}}\PYG{p}{)}
+
+\PYG{n}{voice\PYGZus{}preset} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}v2/en\PYGZus{}speaker\PYGZus{}6\PYGZdq{}}
+\PYG{n}{max\PYGZus{}chunk\PYGZus{}size} \PYG{o}{=} \PYG{l+m+mi}{22}
+
+\PYG{c+c1}{\PYGZsh{} Function to chunk text}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This function chunks the input text into smaller pieces,}
+\PYG{c+c1}{\PYGZsh{} each containing up to a specified number of words.}
+\PYG{c+c1}{\PYGZsh{} The chunks are returned as a list of strings, which can be}
+\PYG{c+c1}{\PYGZsh{} processed individually by the TTS model.}
+\PYG{c+c1}{\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} @param text The input text to be split into chunks.}
+\PYG{c+c1}{\PYGZsh{} @param max\PYGZus{}chunk\PYGZus{}size The maximum number of words allowed in}
+\PYG{c+c1}{\PYGZsh{} each chunk (default is 22).}
+\PYG{c+c1}{\PYGZsh{} @return A list of text chunks, each containing a subset of}
+\PYG{c+c1}{\PYGZsh{} the original text.}
+\PYG{k}{def} \PYG{n+nf}{chunk\PYGZus{}text\PYGZus{}by\PYGZus{}words}\PYG{p}{(}\PYG{n}{text}\PYG{p}{,} \PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{o}{=}\PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{):}
+    \PYG{n}{words} \PYG{o}{=} \PYG{n}{text}\PYG{o}{.}\PYG{n}{split}\PYG{p}{()}
+    \PYG{n}{chunks} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{} \PYGZdq{}}\PYG{o}{.}\PYG{n}{join}\PYG{p}{(}\PYG{n}{words}\PYG{p}{[}\PYG{n}{i}\PYG{p}{:}\PYG{n}{i} \PYG{o}{+} \PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{])}
+              \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{words}\PYG{p}{),} \PYG{n}{max\PYGZus{}chunk\PYGZus{}size}\PYG{p}{)]}
+    \PYG{k}{return} \PYG{n}{chunks}
+
+\PYG{c+c1}{\PYGZsh{} Function to process text and generate speech}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This function generates speech from the input text}
+\PYG{c+c1}{\PYGZsh{} using the Bark TTS model.}
+\PYG{c+c1}{\PYGZsh{} It processes the text by splitting it into chunks,}
+\PYG{c+c1}{\PYGZsh{} converting each chunk into speech, and concatenating}
+\PYG{c+c1}{\PYGZsh{} the results. The final output is saved as a WAV audio file.}
+\PYG{c+c1}{\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} @param text The input text to be converted to speech.}
+\PYG{c+c1}{\PYGZsh{} @param output\PYGZus{}path The path where the generated audio}
+\PYG{c+c1}{\PYGZsh{} will be saved as a WAV file.}
+\PYG{k}{def} \PYG{n+nf}{generate\PYGZus{}speech}\PYG{p}{(}\PYG{n}{text}\PYG{p}{,} \PYG{n}{output\PYGZus{}path}\PYG{p}{):}
+    \PYG{k}{try}\PYG{p}{:}
+        \PYG{n}{text\PYGZus{}chunks} \PYG{o}{=} \PYG{n}{chunk\PYGZus{}text\PYGZus{}by\PYGZus{}words}\PYG{p}{(}\PYG{n}{text}\PYG{p}{)}
+        \PYG{n}{speech\PYGZus{}outputs} \PYG{o}{=} \PYG{p}{[]}
+
+        \PYG{c+c1}{\PYGZsh{} Loop through text chunks and generate}
+        \PYG{c+c1}{\PYGZsh{} speech for each}
+        \PYG{k}{for} \PYG{n}{i}\PYG{p}{,} \PYG{n}{chunk} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n}{text\PYGZus{}chunks}\PYG{p}{):}
+            \PYG{n}{progress\PYGZus{}message}\PYG{o}{.}\PYG{n}{set}\PYG{p}{(}
+                \PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Processing chunk }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{i}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{/}\PYG{l+s+si}{\PYGZob{}}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{text\PYGZus{}chunks}\PYG{p}{)}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{chunk}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+            \PYG{c+c1}{\PYGZsh{} Update the GUI to reflect the current progress}
+            \PYG{n}{root}\PYG{o}{.}\PYG{n}{update}\PYG{p}{()}
+
+            \PYG{c+c1}{\PYGZsh{} Process input chunk for TTS model}
+            \PYG{n}{inputs} \PYG{o}{=} \PYG{n}{processor}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{,} \PYG{n}{voice\PYGZus{}preset}\PYG{o}{=}\PYG{n}{voice\PYGZus{}preset}\PYG{p}{)}
+            \PYG{c+c1}{\PYGZsh{} Generate speech output from model}
+            \PYG{n}{speech\PYGZus{}output} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{generate}\PYG{p}{(}\PYG{o}{**}\PYG{n}{inputs}\PYG{o}{.}\PYG{n}{to}\PYG{p}{(}\PYG{n}{device}\PYG{p}{))}
+            \PYG{c+c1}{\PYGZsh{} Convert to numpy array and store in list}
+            \PYG{n}{speech\PYGZus{}outputs}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{speech\PYGZus{}output}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{cpu}\PYG{p}{()}\PYG{o}{.}\PYG{n}{numpy}\PYG{p}{())}
+
+        \PYG{c+c1}{\PYGZsh{} Concatenate all speech outputs into a single audio}
+        \PYG{n}{concatenated\PYGZus{}output} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{concatenate}\PYG{p}{(}\PYG{n}{speech\PYGZus{}outputs}\PYG{p}{)}
+        \PYG{n}{sampling\PYGZus{}rate} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{generation\PYGZus{}config}\PYG{o}{.}\PYG{n}{sample\PYGZus{}rate}
+
+        \PYG{c+c1}{\PYGZsh{} Save the generated speech to a WAV file}
+        \PYG{n}{scipy}\PYG{o}{.}\PYG{n}{io}\PYG{o}{.}\PYG{n}{wavfile}\PYG{o}{.}\PYG{n}{write}\PYG{p}{(}\PYG{n}{output\PYGZus{}path}\PYG{p}{,} \PYG{n}{rate}\PYG{o}{=}\PYG{n}{sampling\PYGZus{}rate}\PYG{p}{,}
+                               \PYG{n}{data}\PYG{o}{=}\PYG{n}{concatenated\PYGZus{}output}\PYG{p}{)}
+
+        \PYG{n}{progress\PYGZus{}message}\PYG{o}{.}\PYG{n}{set}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Audio generation complete! Saved to: \PYGZdq{}} \PYG{o}{+} \PYG{n}{output\PYGZus{}path}\PYG{p}{)}
+        \PYG{n}{messagebox}\PYG{o}{.}\PYG{n}{showinfo}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Success\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}Audio saved to }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{output\PYGZus{}path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+    \PYG{k}{except} \PYG{n+ne}{Exception} \PYG{k}{as} \PYG{n}{e}\PYG{p}{:}
+        \PYG{n}{progress\PYGZus{}message}\PYG{o}{.}\PYG{n}{set}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Error during processing.\PYGZdq{}}\PYG{p}{)}
+        \PYG{n}{messagebox}\PYG{o}{.}\PYG{n}{showerror}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Error\PYGZdq{}}\PYG{p}{,} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{e}\PYG{p}{))}
+
+\PYG{c+c1}{\PYGZsh{} Function to handle generate button click}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This function is triggered when the user clicks the}
+\PYG{c+c1}{\PYGZsh{} \PYGZdq{}Generate Speech\PYGZdq{} button.}
+\PYG{c+c1}{\PYGZsh{} It retrieves the input text, prompts the user to choose}
+\PYG{c+c1}{\PYGZsh{} a save location, and calls the generate\PYGZus{}speech function.}
+\PYG{c+c1}{\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} @return None}
+\PYG{k}{def} \PYG{n+nf}{on\PYGZus{}generate\PYGZus{}click}\PYG{p}{():}
+    \PYG{n}{text} \PYG{o}{=} \PYG{n}{input\PYGZus{}text}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}1.0\PYGZdq{}}\PYG{p}{,} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{END}\PYG{p}{)}\PYG{o}{.}\PYG{n}{strip}\PYG{p}{()}
+    \PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{text}\PYG{p}{:}
+        \PYG{n}{messagebox}\PYG{o}{.}\PYG{n}{showwarning}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Input Required\PYGZdq{}}\PYG{p}{,}
+                               \PYG{l+s+s2}{\PYGZdq{}Please enter some text to generate speech.\PYGZdq{}}\PYG{p}{)}
+        \PYG{k}{return}
+
+    \PYG{c+c1}{\PYGZsh{} Prompt user to select the location to save the}
+    \PYG{c+c1}{\PYGZsh{} generated audio}
+    \PYG{n}{output\PYGZus{}path} \PYG{o}{=} \PYG{n}{filedialog}\PYG{o}{.}\PYG{n}{asksaveasfilename}\PYG{p}{(}
+        \PYG{n}{defaultextension}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}.wav\PYGZdq{}}\PYG{p}{,}
+        \PYG{n}{filetypes}\PYG{o}{=}\PYG{p}{[(}\PYG{l+s+s2}{\PYGZdq{}WAV files\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}*.wav\PYGZdq{}}\PYG{p}{)],}
+        \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Save Audio File\PYGZdq{}}
+    \PYG{p}{)}
+
+    \PYG{k}{if} \PYG{n}{output\PYGZus{}path}\PYG{p}{:}
+        \PYG{n}{progress\PYGZus{}message}\PYG{o}{.}\PYG{n}{set}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Starting audio generation...\PYGZdq{}}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} Update the GUI before processing}
+        \PYG{n}{root}\PYG{o}{.}\PYG{n}{update}\PYG{p}{()}
+        \PYG{c+c1}{\PYGZsh{} Generate the speech and save it}
+        \PYG{n}{generate\PYGZus{}speech}\PYG{p}{(}\PYG{n}{text}\PYG{p}{,} \PYG{n}{output\PYGZus{}path}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Create GUI}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This section sets up the graphical user interface using Tkinter.}
+\PYG{c+c1}{\PYGZsh{} It contains a text input field for entering text,}
+\PYG{c+c1}{\PYGZsh{} a \PYGZdq{}Generate Speech\PYGZdq{} button to trigger the speech generation,}
+\PYG{c+c1}{\PYGZsh{} and a progress label to display the current status.}
+\PYG{n}{root} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Tk}\PYG{p}{()}
+\PYG{n}{root}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Text\PYGZhy{}to\PYGZhy{}Speech Generator\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{root}\PYG{o}{.}\PYG{n}{geometry}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}1000x600\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Dark theme background}
+\PYG{n}{root}\PYG{o}{.}\PYG{n}{configure}\PYG{p}{(}\PYG{n}{bg}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}121212\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Input text area}
+\PYG{n}{input\PYGZus{}label} \PYG{o}{=} \PYG{n}{ttk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Enter Text:\PYGZdq{}}\PYG{p}{,} \PYG{n}{background}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}121212\PYGZdq{}}\PYG{p}{,}
+                        \PYG{n}{foreground}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{,} \PYG{n}{font}\PYG{o}{=}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{14}\PYG{p}{))}
+\PYG{n}{input\PYGZus{}label}\PYG{o}{.}\PYG{n}{pack}\PYG{p}{(}\PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{10}\PYG{p}{)}
+
+\PYG{n}{input\PYGZus{}text} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{Text}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,} \PYG{n}{wrap}\PYG{o}{=}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{WORD}\PYG{p}{,} \PYG{n}{height}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{,} \PYG{n}{font}\PYG{o}{=}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{12}\PYG{p}{),}
+                     \PYG{n}{bg}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}1E1E1E\PYGZdq{}}\PYG{p}{,} \PYG{n}{fg}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{,} \PYG{n}{insertbackground}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{input\PYGZus{}text}\PYG{o}{.}\PYG{n}{pack}\PYG{p}{(}\PYG{n}{padx}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{,} \PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{n}{fill}\PYG{o}{=}\PYG{n}{tk}\PYG{o}{.}\PYG{n}{BOTH}\PYG{p}{,} \PYG{n}{expand}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Generate button}
+\PYG{n}{generate\PYGZus{}button} \PYG{o}{=} \PYG{n}{ttk}\PYG{o}{.}\PYG{n}{Button}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,} \PYG{n}{text}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Generate Speech\PYGZdq{}}\PYG{p}{,}
+                             \PYG{n}{command}\PYG{o}{=}\PYG{n}{on\PYGZus{}generate\PYGZus{}click}\PYG{p}{,} \PYG{n}{style}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}Custom.TButton\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{generate\PYGZus{}button}\PYG{o}{.}\PYG{n}{pack}\PYG{p}{(}\PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{20}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Progress message}
+\PYG{n}{progress\PYGZus{}message} \PYG{o}{=} \PYG{n}{tk}\PYG{o}{.}\PYG{n}{StringVar}\PYG{p}{()}
+\PYG{n}{progress\PYGZus{}label} \PYG{o}{=} \PYG{n}{ttk}\PYG{o}{.}\PYG{n}{Label}\PYG{p}{(}\PYG{n}{root}\PYG{p}{,} \PYG{n}{textvariable}\PYG{o}{=}\PYG{n}{progress\PYGZus{}message}\PYG{p}{,}
+                           \PYG{n}{background}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}121212\PYGZdq{}}\PYG{p}{,} \PYG{n}{foreground}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}lightblue\PYGZdq{}}\PYG{p}{,}
+                           \PYG{n}{font}\PYG{o}{=}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{12}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}italic\PYGZdq{}}\PYG{p}{))}
+\PYG{n}{progress\PYGZus{}label}\PYG{o}{.}\PYG{n}{pack}\PYG{p}{(}\PYG{n}{pady}\PYG{o}{=}\PYG{l+m+mi}{10}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Style configuration for custom button appearance}
+\PYG{n}{style} \PYG{o}{=} \PYG{n}{ttk}\PYG{o}{.}\PYG{n}{Style}\PYG{p}{()}
+\PYG{n}{style}\PYG{o}{.}\PYG{n}{configure}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Custom.TButton\PYGZdq{}}\PYG{p}{,} \PYG{n}{font}\PYG{o}{=}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Arial\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{14}\PYG{p}{),}
+                \PYG{n}{background}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}323232\PYGZdq{}}\PYG{p}{,} \PYG{n}{foreground}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}white\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{style}\PYG{o}{.}\PYG{n}{map}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Custom.TButton\PYGZdq{}}\PYG{p}{,} \PYG{n}{background}\PYG{o}{=}\PYG{p}{[(}\PYG{l+s+s2}{\PYGZdq{}active\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}\PYGZsh{}505050\PYGZdq{}}\PYG{p}{)])}
+
+\PYG{c+c1}{\PYGZsh{} Start GUI loop}
+\PYG{c+c1}{\PYGZsh{}\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This starts the Tkinter event loop,}
+\PYG{c+c1}{\PYGZsh{} which allows the GUI to run and respond to user actions.}
+\PYG{n}{root}\PYG{o}{.}\PYG{n}{mainloop}\PYG{p}{()}
+
+
+\end{Verbatim}

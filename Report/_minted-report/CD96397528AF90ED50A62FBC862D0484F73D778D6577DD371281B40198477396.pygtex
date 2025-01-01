@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+
+\PYG{n}{inputs} \PYG{o}{=} \PYG{n}{processor}\PYG{p}{(}\PYG{n}{chunk}\PYG{p}{,} \PYG{n}{voice\PYGZus{}preset}\PYG{o}{=}\PYG{n}{voice\PYGZus{}preset}\PYG{p}{)}
+\PYG{n}{speech\PYGZus{}output} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{generate}\PYG{p}{(}\PYG{o}{**}\PYG{n}{inputs}\PYG{o}{.}\PYG{n}{to}\PYG{p}{(}\PYG{n}{device}\PYG{p}{))}
+\PYG{n}{speech\PYGZus{}outputs}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{speech\PYGZus{}output}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{cpu}\PYG{p}{()}\PYG{o}{.}\PYG{n}{numpy}\PYG{p}{())}
+
+\end{Verbatim}
